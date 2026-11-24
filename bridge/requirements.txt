@@ -1,0 +1,2 @@
+pyserial
+pygame  # controller (main) and keyboard (backup) input
