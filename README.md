@@ -17,7 +17,9 @@ scorpion-mips-arm/
 ├── reference/                    # C version, written first, hand-translated to mips/
 │   ├── scorpion.c
 │   ├── joints.c
-│   └── pwm.c
+│   ├── pwm.c
+│   └── tests/
+│       └── test_reference.c      # gcc tests for joints.c + pwm.c
 ├── bridge/                       # Python: controller/keyboard -> MARS -> ESP32
 │   ├── bridge.py
 │   ├── config.py
@@ -26,9 +28,14 @@ scorpion-mips-arm/
 │       └── fake_esp32.py
 ├── firmware/
 │   └── scorpion_esp32/           # ESP32 Arduino sketch (drives the servos)
+│       ├── platformio.ini        # PlatformIO project (also opens in Arduino IDE)
+│       ├── .gitignore
+│       ├── .vscode/
+│       │   └── extensions.json
 │       ├── scorpion_esp32.ino
 │       └── config.h
-├── tools/                        # hardware/protocol test scripts
+├── tools/                        # MARS + hardware/protocol test scripts
+│   ├── Mars.jar                  # MARS 4.5 simulator
 │   ├── servo_test.py
 │   └── protocol_check.py
 └── docs/
