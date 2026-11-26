@@ -15,6 +15,25 @@ Responsibilities:
 
 # TODO: imports (subprocess, serial, pygame for controller/keyboard, config)
 
+import subprocess
+import serial
+import pygame
+import config
+
+pulse_min = 500 # 0 degrees (lowest arm can go)
+pulse_max = 2500 # 180 degrees (Highest point the arm can extend)
+
+controller_axes = {
+    0: (0, 1)  # left stick X  -> base
+    1: (1, -1) # left stick Y  -> shoulder (up is negative on most pads)
+    2: (3, 1)  # right stick Y -> elbow
+    3: (2, -1) # right stick X -> wrist pitch
+}
+
+controller_buttons = {
+    0: (5, +1), 1: (5, -1),   # A / B   -> gripper
+    4: (4, -1), 5: (4, +1),   # bumpers -> wrist roll)
+}
 
 def main():
     # TODO: launch MARS

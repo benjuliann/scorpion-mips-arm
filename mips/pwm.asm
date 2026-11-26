@@ -18,3 +18,12 @@
 #       pulse_us = 500 + (angle * 2000) / 180
 #
 #   Expected: 0 -> 500, 90 -> 1500, 180 -> 2500
+
+angle_to_pulse:
+    li   $t0, 2000
+    mul  $t1, $a0, $t0       # angle * 2000
+    li   $t2, 180
+    div  $t1, $t2            # (angle * 2000) / 180
+    mflo $t1                 # quotient
+    addi $v0, $t1, 500       # + 500
+    jr   $ra
