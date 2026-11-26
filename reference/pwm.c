@@ -18,3 +18,6 @@
  *
  *   Expected: 0 -> 500, 90 -> 1500, 180 -> 2500
  */
+int angle_to_pulse(int angle) = {
+    return 500 + (angle * 2000) / 180; /* 500 = 0 degrees, 1500 = 90 degrees and 2500 = 180 degrees*/
+}
