@@ -12,45 +12,85 @@
  * Protocol: see docs/protocol.md
  */
 
-/* TODO: includes */
+#include <stdio.h>
+
+/* joints.c */
+int  get_target(int joint);
+void set_target(int joint, int angle);
+void set_current(int joint, int angle);
+int  clamp(int joint, int angle);
+
+/* pwm.c */
+int angle_to_pulse(int angle);
 
 /* ---------------------------------------------------------------------------
- * Joint table  (-> .data in scorpion.asm)
- * TODO: per joint (0 base, 1 shoulder, 2 elbow, 3 wrist pitch,
- *       4 wrist roll, 5 gripper):
- *       current angle, target angle, min angle, max angle
+ * Joint table  (-> .data in scorpion.asm, one .word array each)
+ * Index: 0 base, 1 shoulder, 2 elbow, 3 wrist pitch, 4 wrist roll, 5 gripper
+ * All joints start at 90 (center). TODO: tune min/max per joint on the arm.
  * ------------------------------------------------------------------------- */
+int current_angle[6] = { 90,  90,  90,  90,  90,  90};
+int target_angle[6]  = { 90,  90,  90,  90,  90,  90};
+int min_angle[6]     = {  0,   0,   0,   0,   0,   0};
+int max_angle[6]     = {180, 180, 180, 180, 180, 180};
+
+#define STEP 5      /* degrees moved per key press */
 
 /* ---------------------------------------------------------------------------
- * Strings  (-> .data in scorpion.asm)
- * TODO: command prefixes ("J", ":", "HOME", "PING"), newline, any messages
+ * Strings  (-> .data in scorpion.asm, .asciiz)
+ * Key for joint j is up_keys[j] (+STEP) or down_keys[j] (-STEP).
+ *   q/a base, w/s shoulder, e/d elbow, r/f wrist pitch, t/g wrist roll,
+ *   y/h gripper, x quits.
  * ------------------------------------------------------------------------- */
+char up_keys[]   = "qwerty";
+char down_keys[] = "asdfgh";
 
 /* ---------------------------------------------------------------------------
  * Input handling
- * TODO: read an input char from stdin, map it to joint + direction
+ * find_key: return the index of c in keys (0-5), or -1 if not found.
+ * (-> $a0 = keys address, $a1 = c, $v0 = index)
  * ------------------------------------------------------------------------- */
-
-/* ---------------------------------------------------------------------------
- * Limit clamping
- * TODO: clamp target angle to the joint's min/max (see joints.c)
- * ------------------------------------------------------------------------- */
-
-/* ---------------------------------------------------------------------------
- * Angle-to-pulse call
- * TODO: call angle_to_pulse() in pwm.c
- * ------------------------------------------------------------------------- */
-
-/* ---------------------------------------------------------------------------
- * Command-line output
- * TODO: print "J<id>:<pulse_us>\n" to stdout
- * ------------------------------------------------------------------------- */
+int find_key(char keys[], int c) {
+    for (int i = 0; i < 6; i++) {
+        if (keys[i] == c) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 /* ---------------------------------------------------------------------------
  * main - main loop  (-> main: in scorpion.asm)
- * TODO: init joint table, then loop:
- *       read input -> update target -> clamp -> angle-to-pulse -> output
+ * read input -> update target -> clamp -> angle-to-pulse -> output
  * ------------------------------------------------------------------------- */
 int main(void) {
-    return 0;
+    while (1) {
+        int c = getchar();                  /* MARS: syscall 12 (read char) */
+        if (c == EOF || c == 'x') {
+            break;
+        }
+
+        int step = STEP;
+        int joint = find_key(up_keys, c);
+        if (joint == -1) {
+            step = -STEP;
+            joint = find_key(down_keys, c);
+        }
+        if (joint == -1) {
+            continue;                       /* ignore other chars, e.g. '\n' */
+        }
+
+        /* Limit clamping (joints.c) */
+        int angle = clamp(joint, get_target(joint) + step);
+        set_target(joint, angle);
+
+        /* Angle-to-pulse call (pwm.c) */
+        int pulse = angle_to_pulse(angle);
+
+        /* Command-line output: "J<id>:<pulse_us>\n"
+         * MARS: print "J", print_int joint, print ":", print_int pulse, "\n" */
+        printf("J%d:%d\n", joint, pulse);
+
+        set_current(joint, angle);
+    }
+    return 0;                               /* MARS: syscall 10 (exit) */
 }

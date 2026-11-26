@@ -19,6 +19,7 @@
 #
 #   Expected: 0 -> 500, 90 -> 1500, 180 -> 2500
 
+        .globl angle_to_pulse
 angle_to_pulse:
     li   $t0, 2000
     mul  $t1, $a0, $t0       # angle * 2000

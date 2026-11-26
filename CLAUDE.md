@@ -69,3 +69,20 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## Project Context
+
+Robotic arm (6 servos) whose control logic is written in **MIPS assembly**, run in the **MARS** simulator, with commands forwarded to an **ESP32** that drives the servos.
+
+Pipeline:
+
+```
+controller/keyboard -> bridge/bridge.py -> (stdin) MARS running mips/scorpion.asm
+  -> (stdout command lines) -> bridge.py -> (USB serial, 115200) -> ESP32 firmware -> servo PWM
+```
+
+- `reference/*.c`: C version, written first; `mips/*.asm` is hand-translated from it. Keep the two in sync.
+- `mips/`: the real program. Must run in MARS (`java -jar tools/Mars.jar nc mips/scorpion.asm`), so only MARS-supported instructions and syscalls.
+- `bridge/`: Python glue. Launches MARS, feeds input, validates output lines, forwards them to the ESP32.
+- `firmware/scorpion_esp32/`: Arduino/PlatformIO sketch on the ESP32.
+- `docs/protocol.md` is the source of truth for the serial message format.

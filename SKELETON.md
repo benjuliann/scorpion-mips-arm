@@ -1,4 +1,6 @@
 # Task: Scaffold the `scorpion-mips-arm` repo
+
+> **Status:** Scaffold complete. Files since added beyond the original scaffold are listed below (PlatformIO setup, `tools/Mars.jar`, `reference/tests/test_reference.c`). Some files now hold real code (`reference/*.c`, `mips/tests/test_pwm.asm`); the "skeleton only" rules below applied to the initial scaffold.
  
 You are working in the repo root of **scorpion-mips-arm** (The Scorpion: a MIPS-assembly-controlled claw-style robot arm, driven through a Python bridge and an ESP32).
 
@@ -59,9 +61,13 @@ These are defaults the team can change later; mark them as such.
 - `requirements.txt` - `pyserial` and `pygame` (controller and keyboard input).
 - `tests/fake_esp32.py` - docstring + stub `main()` describing: reads lines from a given serial/pty/stdin, prints them, replies `OK`. `pass` body.
 ### `firmware/scorpion_esp32/`
+- `platformio.ini` - PlatformIO project, `env:esp32dev`, Arduino framework, `monitor_speed = 115200`, `lib_deps = madhephaestus/ESP32Servo`. `src_dir`/`include_dir` set to `.` so the folder still opens in Arduino IDE.
+- `.gitignore` - PlatformIO build output (`.pio`) and generated `.vscode` files.
+- `.vscode/extensions.json` - recommends the PlatformIO IDE extension.
 - `scorpion_esp32.ino` - header comment, `#include "config.h"`, empty `setup()` and `loop()` with TODO comments (init Serial, attach servos, parse line, apply pulse, failsafe check). Must compile as valid Arduino code.
 - `config.h` - include guard, `#define` constants: `BAUD_RATE 115200`, `NUM_JOINTS 6`, `FAILSAFE_MS 2000`, arrays or defines for pin numbers set to `-1 // TODO`, per-joint `PULSE_MIN_US`/`PULSE_MAX_US` defaulting to 500/2500 with a comment that they must be tuned per servo, and that the gripper's closed limit must stop before the claw fully closes (avoid stalling).
 ### `tools/`
+- `Mars.jar` - MARS 4.5, committed to the repo (path used by `bridge/config.py`).
 - `servo_test.py` - docstring + stub `main()` (`pass`) describing: open serial, sweep one chosen joint between its limits slowly. TODO comments only.
 - `protocol_check.py` - docstring + stub `main()` listing the sample messages from `docs/protocol.md` to send and the expected replies.
 ### `reference/`
@@ -69,6 +75,7 @@ C reference, written first and translated by hand into the matching `mips/` file
 - `scorpion.c` - same sections as `scorpion.asm`, each noting where it maps in the assembly. Only `int main(void) { return 0; }`.
 - `joints.c` - TODO list of the joint accessors (matches `joints.asm`).
 - `pwm.c` - TODO for `int angle_to_pulse(int angle)`: angle -> `$a0`, return -> `$v0`, integer formula, expected 0 -> 500, 90 -> 1500, 180 -> 2500.
+- `tests/test_reference.c` - tests for `joints.c` and `pwm.c`. Build: `gcc reference/tests/test_reference.c reference/joints.c reference/pwm.c -o test_reference`; exit code 0 = all passed.
 - Each `mips/*.asm` header gets a `C ref` line pointing to its `.c` file.
 ### Placeholder files for otherwise-empty folders
 Git does not track empty folders. If any folder in the structure ends up with no file, add an empty `.gitkeep`.

@@ -1,0 +1,4 @@
+# Compiled C reference binaries
+/scorpion
+/test_reference
+*.exe
